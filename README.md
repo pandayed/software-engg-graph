@@ -1,73 +1,118 @@
-# React + TypeScript + Vite
+# Software Engineering Graph
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An interactive graph visualization for software engineering concepts.
 
-Currently, two official plugins are available:
+## Contributing: Adding New Nodes
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Each node in the graph is a folder inside the `content/` directory containing two files:
 
-## React Compiler
+### 1. Create a new folder
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Create a folder with your node's ID as the name (use kebab-case):
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+content/your-node-id/
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Create `meta.yaml`
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+This file defines the node metadata and its connections:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```yaml
+id: your-node-id
+title: Your Node Title
+prerequisites:
+  - parent-node-id
+next:
+  - child-node-id-1
+  - child-node-id-2
 ```
+
+| Field | Description |
+|-------|-------------|
+| `id` | Unique identifier in kebab-case (must match folder name) |
+| `title` | Display title for the node |
+| `prerequisites` | Array of node IDs that should be learned before this node (incoming edges) |
+| `next` | Array of node IDs that follow this node (outgoing edges) |
+
+### 3. Create `content.md`
+
+This file contains the node's content in Markdown format:
+
+```markdown
+Brief description of the concept.
+
+## Section Heading
+
+Details about this section.
+
+## Another Section
+
+More content here.
+```
+
+### Example
+
+For a node about "Load Balancers":
+
+**Folder:** `content/load-balancer/`
+
+**meta.yaml:**
+```yaml
+id: load-balancer
+title: Load Balancer
+prerequisites:
+  - servers
+next:
+  - load-balancer-algorithms
+  - load-balancer-types
+```
+
+**content.md:**
+```markdown
+A load balancer distributes incoming network traffic across multiple servers.
+
+## Purpose
+
+- Prevents server overload
+- Improves availability
+- Enables horizontal scaling
+```
+
+### ID Naming Conventions
+
+- Use kebab-case: lowercase letters, numbers, and hyphens only
+- IDs must be unique across the entire graph
+- Use descriptive names that clearly identify the concept
+
+**Language/Technology Prefixes:**
+
+When a concept exists in multiple languages or technologies, prefix the ID with the language/technology name:
+
+| Concept | Python ID | C++ ID | JavaScript ID |
+|---------|-----------|--------|---------------|
+| Loops | `python-loops` | `cpp-loops` | `js-loops` |
+| Classes | `python-classes` | `cpp-classes` | `js-classes` |
+| Functions | `python-functions` | `cpp-functions` | `js-functions` |
+
+Common prefixes:
+- `python-` for Python
+- `cpp-` for C++
+- `js-` for JavaScript
+- `java-` for Java
+- `go-` for Go
+- `rust-` for Rust
+
+**Generic Concepts:**
+
+For language-agnostic concepts, use the concept name directly without a prefix:
+
+- `loops` (general concept of loops)
+- `recursion` (general recursion theory)
+- `data-structures` (overview of data structures)
+
+### Validation Rules
+
+- `id` must be unique and in kebab-case (lowercase letters, numbers, hyphens)
+- `prerequisites` must reference existing node IDs
+- `content.md` cannot be empty
