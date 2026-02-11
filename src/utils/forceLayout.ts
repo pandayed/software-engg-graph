@@ -1,13 +1,4 @@
-import {
-  forceSimulation,
-  forceLink,
-  forceManyBody,
-  forceCenter,
-  forceCollide,
-  type Simulation,
-  type SimulationNodeDatum,
-  type SimulationLinkDatum,
-} from "d3-force";
+import dagre from "dagre";
 import type { Node } from "../types";
 
 export interface NodePosition {
@@ -16,69 +7,56 @@ export interface NodePosition {
   y: number;
 }
 
-interface SimNode extends SimulationNodeDatum {
-  id: string;
-}
-
-interface SimLink extends SimulationLinkDatum<SimNode> {
-  source: string | SimNode;
-  target: string | SimNode;
-}
-
-export function calculateForceLayout(
-  nodes: Node[],
-  onTick: (positions: NodePosition[]) => void,
-  onEnd: (positions: NodePosition[]) => void
-): Simulation<SimNode, SimLink> {
+export function calculateDagreLayout(nodes: Node[]): NodePosition[] {
   if (nodes.length === 0) {
-    onEnd([]);
-    return forceSimulation<SimNode>([]);
+    return [];
   }
 
-  const simNodes: SimNode[] = nodes.map((node) => ({
-    id: node.id,
-    x: Math.random() * 600 - 300,
-    y: Math.random() * 600 - 300,
-  }));
+  const g = new dagre.graphlib.Graph();
 
-  const simLinks: SimLink[] = [];
+  g.setGraph({
+    rankdir: "TB",
+    nodesep: 80,
+    ranksep: 120,
+    marginx: 20,
+    marginy: 20,
+  });
+
+  g.setDefaultEdgeLabel(() => ({}));
+
+  const nodeWidth = 100;
+  const nodeHeight = 100;
+
+  nodes.forEach((node) => {
+    g.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+  });
+
   nodes.forEach((node) => {
     node.next.forEach((nextId) => {
       if (nodes.some((n) => n.id === nextId)) {
-        simLinks.push({ source: node.id, target: nextId });
+        g.setEdge(node.id, nextId);
       }
     });
   });
 
-  const nodeRadius = 60;
-  const simulation = forceSimulation<SimNode>(simNodes)
-    .force(
-      "link",
-      forceLink<SimNode, SimLink>(simLinks)
-        .id((d) => d.id)
-        .distance(200)
-        .strength(0.5)
-    )
-    .force("charge", forceManyBody().strength(-800))
-    .force("center", forceCenter(0, 0))
-    .force("collide", forceCollide(nodeRadius + 20))
-    .alphaDecay(0.02);
+  dagre.layout(g);
 
-  const getPositions = (): NodePosition[] =>
-    simNodes.map((node) => ({
-      id: node.id,
-      x: node.x ?? 0,
-      y: node.y ?? 0,
-    }));
+  const positions: NodePosition[] = [];
+  const graphInfo = g.graph();
+  const graphWidth = graphInfo.width ?? 0;
+  const graphHeight = graphInfo.height ?? 0;
 
-  simulation.on("tick", () => {
-    onTick(getPositions());
+  nodes.forEach((node) => {
+    const nodeInfo = g.node(node.id);
+    if (nodeInfo) {
+      positions.push({
+        id: node.id,
+        x: nodeInfo.x - graphWidth / 2,
+        y: nodeInfo.y - graphHeight / 2,
+      });
+    }
   });
 
-  simulation.on("end", () => {
-    onEnd(getPositions());
-  });
-
-  return simulation;
+  return positions;
 }
 

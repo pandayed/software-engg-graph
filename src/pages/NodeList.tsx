@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import type { Node } from "../types.ts";
 import NodeDrawer from "../components/NodeDrawer.tsx";
 import Header from "../components/Header.tsx";
-import { calculateForceLayout, type NodePosition } from "../utils/forceLayout.ts";
+import { calculateDagreLayout, type NodePosition } from "../utils/forceLayout.ts";
 
 interface NodeListProps {
   nodes: Node[];
@@ -34,18 +34,9 @@ export default function NodeList({ nodes, onSaveNode, onAddNode }: NodeListProps
       return;
     }
 
-    const simulation = calculateForceLayout(
-      nodes,
-      (newPositions) => setPositions(newPositions),
-      (finalPositions) => {
-        setPositions(finalPositions);
-        setShouldAutoFit(true);
-      }
-    );
-
-    return () => {
-      simulation.stop();
-    };
+    const newPositions = calculateDagreLayout(nodes);
+    setPositions(newPositions);
+    setShouldAutoFit(true);
   }, [nodes]);
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
