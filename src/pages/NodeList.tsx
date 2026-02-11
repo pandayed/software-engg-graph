@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import type { Node } from "../types.ts";
 import NodeDrawer from "../components/NodeDrawer.tsx";
 import Header from "../components/Header.tsx";
+import Grid from "../components/Grid.tsx";
 import { calculateDagreLayout, type NodePosition } from "../utils/forceLayout.ts";
 
 interface NodeListProps {
@@ -27,6 +28,14 @@ export default function NodeList({ nodes, onSaveNode, onAddNode }: NodeListProps
   const [isAddMode, setIsAddMode] = useState(false);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [shouldAutoFit, setShouldAutoFit] = useState(false);
+  const [showGrid, setShowGrid] = useState(() => {
+    const saved = localStorage.getItem("showGrid");
+    return saved !== null ? saved === "true" : true;
+  });
+  const [gridDensity, setGridDensity] = useState(() => {
+    const saved = localStorage.getItem("gridDensity");
+    return saved !== null ? parseInt(saved, 10) : 40;
+  });
 
   useEffect(() => {
     if (nodes.length === 0) {
@@ -79,19 +88,31 @@ export default function NodeList({ nodes, onSaveNode, onAddNode }: NodeListProps
   const getPosition = (id: string) => positions.find((p) => p.id === id);
 
   const getConnectedNodeIds = (nodeId: string): Set<string> => {
-    const connected = new Set<string>();
-    connected.add(nodeId);
-    const node = nodes.find((n) => n.id === nodeId);
-    if (node) {
-      node.next.forEach((id) => connected.add(id));
-      node.prerequisites.forEach((id) => connected.add(id));
-    }
-    nodes.forEach((n) => {
-      if (n.next.includes(nodeId) || n.prerequisites.includes(nodeId)) {
-        connected.add(n.id);
-      }
-    });
-    return connected;
+    const pathNodes = new Set<string>();
+    pathNodes.add(nodeId);
+
+    const findPredecessors = (currentId: string): string[] => {
+      const predecessors: string[] = [];
+      nodes.forEach((n) => {
+        if (n.next.includes(currentId)) {
+          predecessors.push(n.id);
+        }
+      });
+      return predecessors;
+    };
+
+    const traverseUp = (currentId: string) => {
+      const predecessors = findPredecessors(currentId);
+      predecessors.forEach((predId) => {
+        if (!pathNodes.has(predId)) {
+          pathNodes.add(predId);
+          traverseUp(predId);
+        }
+      });
+    };
+
+    traverseUp(nodeId);
+    return pathNodes;
   };
 
   const getStartingNodeIds = (nodeId: string): Set<string> => {
@@ -210,6 +231,19 @@ export default function NodeList({ nodes, onSaveNode, onAddNode }: NodeListProps
     }
   };
 
+  const handleToggleGrid = () => {
+    setShowGrid(prev => {
+      const newValue = !prev;
+      localStorage.setItem("showGrid", String(newValue));
+      return newValue;
+    });
+  };
+
+  const handleGridDensityChange = (density: number) => {
+    setGridDensity(density);
+    localStorage.setItem("gridDensity", String(density));
+  };
+
   const getZoomLabel = () => {
     const percentage = Math.round(transform.scale * 100);
     const preset = zoomPresets.find(p => p.value === transform.scale);
@@ -308,6 +342,7 @@ export default function NodeList({ nodes, onSaveNode, onAddNode }: NodeListProps
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
+        <Grid show={showGrid} density={gridDensity} transform={transform} />
         <div
           className="graph-canvas"
           style={{
@@ -421,6 +456,10 @@ export default function NodeList({ nodes, onSaveNode, onAddNode }: NodeListProps
         filteredNodes={filteredNodes}
         onNodeClick={handleNodeClick}
         onAddNodeClick={handleAddNodeClick}
+        showGrid={showGrid}
+        onToggleGrid={handleToggleGrid}
+        gridDensity={gridDensity}
+        onGridDensityChange={handleGridDensityChange}
       />
 
       <NodeDrawer

@@ -19,7 +19,14 @@ interface HeaderProps {
   filteredNodes: { id: string; title: string }[];
   onNodeClick: (nodeId: string) => void;
   onAddNodeClick: () => void;
+  showGrid: boolean;
+  onToggleGrid: () => void;
+  gridDensity: number;
+  onGridDensityChange: (density: number) => void;
 }
+
+const GRID_DENSITY_MIN = 15;
+const GRID_DENSITY_MAX = 100;
 
 export default function Header({
   zoomLabel,
@@ -33,16 +40,22 @@ export default function Header({
   filteredNodes,
   onNodeClick,
   onAddNodeClick,
+  showGrid,
+  onToggleGrid,
+  gridDensity,
+  onGridDensityChange,
 }: HeaderProps) {
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem("theme") as Theme;
     return saved || "system";
   });
   const [zoomDropdownOpen, setZoomDropdownOpen] = useState(false);
+  const [gridPopoverOpen, setGridPopoverOpen] = useState(false);
   const [searchExpanded, setSearchExpanded] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const gridPopoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -62,6 +75,9 @@ export default function Header({
       }
       if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
         if (!searchQuery) setSearchExpanded(false);
+      }
+      if (gridPopoverRef.current && !gridPopoverRef.current.contains(e.target as Node)) {
+        setGridPopoverOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -182,6 +198,47 @@ export default function Header({
           </svg>
           <span>Add Node</span>
         </button>
+
+        <div className="header-divider" />
+
+        <div
+          className="header-grid-group"
+          ref={gridPopoverRef}
+          onMouseEnter={() => setGridPopoverOpen(true)}
+          onMouseLeave={() => setGridPopoverOpen(false)}
+        >
+          <button
+            className="header-btn header-grid-btn"
+            onClick={onToggleGrid}
+            title={showGrid ? "Hide Grid" : "Show Grid"}
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+              <line x1="6" y1="3" x2="6" y2="21" />
+              <line x1="12" y1="3" x2="12" y2="21" />
+              <line x1="18" y1="3" x2="18" y2="21" />
+              {!showGrid && <line x1="4" y1="4" x2="20" y2="20" strokeWidth="2.5" />}
+            </svg>
+          </button>
+          <div className={`header-grid-popover ${gridPopoverOpen ? "visible" : ""}`}>
+            <div className="header-grid-popover-row">
+              <span className="header-grid-popover-label">Density</span>
+              <div className={`header-grid-slider-container ${!showGrid ? "disabled" : ""}`}>
+                <input
+                  type="range"
+                  className="header-grid-slider"
+                  min={GRID_DENSITY_MIN}
+                  max={GRID_DENSITY_MAX}
+                  value={gridDensity}
+                  onChange={(e) => onGridDensityChange(Number(e.target.value))}
+                  disabled={!showGrid}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
 
         <div className="header-divider" />
 
