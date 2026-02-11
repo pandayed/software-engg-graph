@@ -1,0 +1,17 @@
+id: python
+title: Python
+prerequisites:
+  - programming-languages
+next:
+  - python-data-types
+  - python-loops
+  - python-classes
+  - python-functions
+  - python-type-hints
+  - python-decorators
+  - python-context-managers
+  - python-enums
+  - python-pydantic
+  - python-fastapi
+  - python-sqlalchemy
+
