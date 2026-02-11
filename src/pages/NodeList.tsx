@@ -26,6 +26,7 @@ export default function NodeList({ nodes, onSaveNode, onAddNode }: NodeListProps
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isAddMode, setIsAddMode] = useState(false);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
+  const [shouldAutoFit, setShouldAutoFit] = useState(false);
 
   useEffect(() => {
     if (nodes.length === 0) {
@@ -36,7 +37,10 @@ export default function NodeList({ nodes, onSaveNode, onAddNode }: NodeListProps
     const simulation = calculateForceLayout(
       nodes,
       (newPositions) => setPositions(newPositions),
-      (finalPositions) => setPositions(finalPositions)
+      (finalPositions) => {
+        setPositions(finalPositions);
+        setShouldAutoFit(true);
+      }
     );
 
     return () => {
@@ -167,9 +171,49 @@ export default function NodeList({ nodes, onSaveNode, onAddNode }: NodeListProps
     setTransform(prev => ({ ...prev, scale: Math.max(prev.scale * 0.8, 0.1) }));
   };
 
+  const fitAllNodes = useCallback(() => {
+    if (positions.length === 0) return;
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    const containerWidth = container.clientWidth;
+    const containerHeight = container.clientHeight;
+
+    const nodeRadius = 50;
+    const minX = Math.min(...positions.map((p) => p.x)) - nodeRadius;
+    const maxX = Math.max(...positions.map((p) => p.x)) + nodeRadius;
+    const minY = Math.min(...positions.map((p) => p.y)) - nodeRadius;
+    const maxY = Math.max(...positions.map((p) => p.y)) + nodeRadius;
+
+    const contentWidth = maxX - minX;
+    const contentHeight = maxY - minY;
+
+    const padding = 80;
+    const scaleX = (containerWidth - padding * 2) / contentWidth;
+    const scaleY = (containerHeight - padding * 2) / contentHeight;
+    const newScale = Math.min(Math.max(Math.min(scaleX, scaleY), 0.1), 2);
+
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+
+    setTransform({
+      x: -centerX * newScale,
+      y: -centerY * newScale,
+      scale: newScale,
+    });
+  }, [positions]);
+
+  useEffect(() => {
+    if (shouldAutoFit && positions.length > 0) {
+      fitAllNodes();
+      setShouldAutoFit(false);
+    }
+  }, [shouldAutoFit, positions, fitAllNodes]);
+
   const handleZoomPreset = (value: "auto" | number) => {
     if (value === "auto") {
-      setTransform({ x: 0, y: 0, scale: 1 });
+      fitAllNodes();
     } else {
       setTransform(prev => ({ ...prev, scale: value }));
     }
