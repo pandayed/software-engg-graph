@@ -1,0 +1,7 @@
+id: variables
+title: Variables
+prerequisites: []
+next:
+  - data-types
+  - constants
+
