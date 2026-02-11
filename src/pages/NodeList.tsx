@@ -2,17 +2,12 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import type { Node } from "../types.ts";
 import NodeDrawer from "../components/NodeDrawer.tsx";
 import Header from "../components/Header.tsx";
+import { calculateForceLayout, type NodePosition } from "../utils/forceLayout.ts";
 
 interface NodeListProps {
   nodes: Node[];
   onSaveNode: (node: Node) => void;
   onAddNode: (node: Node) => void;
-}
-
-interface NodePosition {
-  id: string;
-  x: number;
-  y: number;
 }
 
 interface Transform {
@@ -33,19 +28,20 @@ export default function NodeList({ nodes, onSaveNode, onAddNode }: NodeListProps
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (nodes.length === 0) return;
+    if (nodes.length === 0) {
+      setPositions([]);
+      return;
+    }
 
-    const radius = 250;
-    const newPositions = nodes.map((node, index) => {
-      const angle = (2 * Math.PI * index) / nodes.length - Math.PI / 2;
-      return {
-        id: node.id,
-        x: radius * Math.cos(angle),
-        y: radius * Math.sin(angle),
-      };
-    });
+    const simulation = calculateForceLayout(
+      nodes,
+      (newPositions) => setPositions(newPositions),
+      (finalPositions) => setPositions(finalPositions)
+    );
 
-    setPositions(newPositions);
+    return () => {
+      simulation.stop();
+    };
   }, [nodes]);
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
