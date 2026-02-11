@@ -1,8 +1,0 @@
-id: arrays
-title: Arrays
-prerequisites:
-  - data-types
-next:
-  - loops
-  - array-methods
-

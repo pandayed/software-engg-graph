@@ -1,8 +1,0 @@
-id: data-types
-title: Data Types
-prerequisites:
-  - variables
-next:
-  - type-conversion
-  - arrays
-

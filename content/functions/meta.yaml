@@ -1,8 +1,0 @@
-id: functions
-title: Functions
-prerequisites:
-  - variables
-next:
-  - parameters
-  - return-values
-
