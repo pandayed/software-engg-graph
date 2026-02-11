@@ -1,0 +1,7 @@
+id: cdn-architectures
+title: CDN Architectures
+prerequisites:
+  - cdn
+next:
+  - cdn-challenges
+

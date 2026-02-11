@@ -1,0 +1,7 @@
+id: cdn-routing-techniques
+title: CDN Routing Techniques
+prerequisites:
+  - cdn
+next:
+  - cdn-challenges
+

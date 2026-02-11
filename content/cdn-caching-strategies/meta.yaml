@@ -1,0 +1,7 @@
+id: cdn-caching-strategies
+title: CDN Caching Strategies
+prerequisites:
+  - cdn
+next:
+  - cdn-challenges
+

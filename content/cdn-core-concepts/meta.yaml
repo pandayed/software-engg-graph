@@ -1,0 +1,8 @@
+id: cdn-core-concepts
+title: CDN Core Concepts
+prerequisites:
+  - cdn
+next:
+  - cdn-challenges
+  - cdn-metrics
+
