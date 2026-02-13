@@ -18,6 +18,7 @@ export default function EditorMode({ nodes, onSave }: EditorModeProps) {
     text: "",
     prerequisites: [],
     next: [],
+    directoryPath: "",
   });
 
   const [prerequisitesText, setPrerequisitesText] = useState("");

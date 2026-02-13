@@ -8,6 +8,13 @@ interface NodeMeta {
   next: string[];
 }
 
+function extractDirectoryPath(metaPath: string): string {
+  const withoutContent = metaPath.replace("/content/", "").replace("/meta.yaml", "");
+  const parts = withoutContent.split("/");
+  parts.pop();
+  return parts.length > 0 ? parts.join("/") : "";
+}
+
 export async function loadNodes(): Promise<Node[]> {
   const metaModules = import.meta.glob("/content/**/meta.yaml", {
     query: "?raw",
@@ -32,12 +39,15 @@ export async function loadNodes(): Promise<Node[]> {
       text = (await contentModules[contentPath]()) as string;
     }
 
+    const directoryPath = extractDirectoryPath(metaPath);
+
     nodes.push({
       id: meta.id,
       title: meta.title,
       text: text.trim(),
       prerequisites: meta.prerequisites || [],
       next: meta.next || [],
+      directoryPath,
     });
   }
 

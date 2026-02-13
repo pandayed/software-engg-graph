@@ -34,7 +34,7 @@ export default function NodeDrawer({ node, nodes, onClose, onNodeClick, onSave, 
 
   useEffect(() => {
     if (isAddMode) {
-      setFormData({ id: "", title: "", text: "", prerequisites: [], next: [] });
+      setFormData({ id: "", title: "", text: "", prerequisites: [], next: [], directoryPath: "" });
       setPrerequisitesText("");
       setNextText("");
       setIsEditing(true);
@@ -96,8 +96,8 @@ export default function NodeDrawer({ node, nodes, onClose, onNodeClick, onSave, 
 
   const isOpen = (node !== null && formData !== null) || isAddMode;
 
-  const displayNode = node || { id: "", title: "", text: "", prerequisites: [], next: [] };
-  const displayFormData = formData || { id: "", title: "", text: "", prerequisites: [], next: [] };
+  const displayNode = node || { id: "", title: "", text: "", prerequisites: [], next: [], directoryPath: "" };
+  const displayFormData = formData || { id: "", title: "", text: "", prerequisites: [], next: [], directoryPath: "" };
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -138,6 +138,7 @@ export default function NodeDrawer({ node, nodes, onClose, onNodeClick, onSave, 
       text: formData.text,
       prerequisites,
       next,
+      directoryPath: formData.directoryPath,
     };
 
     const validationError = validateNode(nodeToSave, nodes, !isAddMode);

@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import type { Node } from "../types.ts";
 import NodeDrawer from "../components/NodeDrawer.tsx";
 import Header from "../components/Header.tsx";
 import Grid from "../components/Grid.tsx";
 import { calculateDagreLayout, type NodePosition } from "../utils/forceLayout.ts";
+import { computeViews, computeViewBounds, type ViewBounds } from "../utils/views.ts";
 
 interface NodeListProps {
   nodes: Node[];
@@ -47,6 +48,12 @@ export default function NodeList({ nodes, onSaveNode, onAddNode }: NodeListProps
     setPositions(newPositions);
     setShouldAutoFit(true);
   }, [nodes]);
+
+  const views = useMemo(() => computeViews(nodes), [nodes]);
+  const viewBounds: ViewBounds[] = useMemo(
+    () => computeViewBounds(views, positions),
+    [views, positions]
+  );
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
@@ -385,6 +392,24 @@ export default function NodeList({ nodes, onSaveNode, onAddNode }: NodeListProps
                 <path d="M 0 0 L 10 5 L 0 10 z" fill="#666" fillOpacity="0.15" />
               </marker>
             </defs>
+            {viewBounds.map((view) => (
+              <g key={view.id} className="view-group">
+                <circle
+                  cx={view.cx}
+                  cy={view.cy}
+                  r={view.radius}
+                  className={`view-circle depth-${view.depth}`}
+                />
+                <text
+                  x={view.cx}
+                  y={view.cy - view.radius - 10}
+                  className="view-label"
+                  textAnchor="middle"
+                >
+                  {view.name}
+                </text>
+              </g>
+            ))}
             {getConnections().map((conn, idx) => {
               const isHighlighted = connectedNodes &&
                 (connectedNodes.has(conn.fromId) && connectedNodes.has(conn.toId));

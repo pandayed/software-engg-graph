@@ -145,7 +145,45 @@ button:focus {
   opacity: 0.15;
 }
 
+.view-group {
+  pointer-events: none;
+}
 
+.view-circle {
+  fill: none;
+  stroke: #444;
+  stroke-width: 2;
+  stroke-dasharray: 8 4;
+  opacity: 0.6;
+}
+
+.view-circle.depth-0 {
+  stroke: #555;
+  stroke-width: 2.5;
+}
+
+.view-circle.depth-1 {
+  stroke: #4a4a4a;
+  stroke-width: 2;
+}
+
+.view-circle.depth-2 {
+  stroke: #404040;
+  stroke-width: 1.5;
+}
+
+.view-circle.depth-3 {
+  stroke: #383838;
+  stroke-width: 1;
+}
+
+.view-label {
+  fill: #888;
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
 
 .graph-node {
   position: absolute;
